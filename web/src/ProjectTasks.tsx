@@ -23,7 +23,7 @@ type ProjectTask = {
 const inputClass = 'w-full rounded-lg border border-slate-600 bg-slate-950 px-3 py-2'
 const buttonClass = 'rounded-lg border border-slate-600 px-3 py-2 disabled:opacity-50'
 
-export function ProjectTasks({ projectId, archived }: { projectId: string; archived: boolean }) {
+export function ProjectTasks({ projectId, archived, onChanged }: { projectId: string; archived: boolean; onChanged: () => void }) {
   const path = `/api/projects/${projectId}/tasks`
   const [tasks, setTasks] = useState<ProjectTask[] | null>(null)
   const [editor, setEditor] = useState<ProjectTask | 'new' | null>(null)
@@ -84,6 +84,7 @@ export function ProjectTasks({ projectId, archived }: { projectId: string; archi
       const saved: ProjectTask = await response.json()
       setTasks((items) => [...(items ?? []).filter((task) => task.id !== saved.id), saved])
       if (editor !== 'new') refreshHistory()
+      onChanged()
       setEditor(null)
     } catch {
       setError('ارتباط با سرور برقرار نشد.')
@@ -150,7 +151,7 @@ export function ProjectTasks({ projectId, archived }: { projectId: string; archi
           ))}
         </ul>
       )}
-      {!archived && <ActivityForm projectId={projectId} tasks={sorted} onSaved={refreshHistory} />}
+      {!archived && <ActivityForm projectId={projectId} tasks={sorted} onSaved={() => { refreshHistory(); onChanged() }} />}
       <ActivityHistory key={`${archived}-${historyRevision}`} projectId={projectId} tasks={sorted} />
     </section>
   )

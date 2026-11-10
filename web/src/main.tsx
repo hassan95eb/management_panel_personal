@@ -53,8 +53,8 @@ function App() {
   }
 
   return (
-    <main className="mx-auto grid min-h-svh w-full max-w-3xl place-items-center px-5 py-12">
-      <section className="w-full rounded-3xl border border-slate-700 bg-slate-900 p-8 sm:p-12">
+    <main className="mx-auto grid min-h-svh w-full max-w-6xl place-items-center px-3 py-6 sm:px-5 sm:py-12">
+      <section className={`w-full rounded-3xl border border-slate-700 bg-slate-900 p-4 sm:p-8 ${session === 'owner' ? '' : 'max-w-3xl'}`}>
         <p className="mb-4 text-sm font-medium text-teal-300">پنل مدیریت پروژه</p>
         <h1 className="text-4xl font-bold sm:text-5xl">اتاق فرمان</h1>
         {session === 'checking' && <p role="status" className="mt-6">در حال بررسی نشست…</p>}

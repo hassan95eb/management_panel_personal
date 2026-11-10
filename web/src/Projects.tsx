@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Dashboard } from './Dashboard'
 import { ProjectTasks } from './ProjectTasks'
 
 const statuses = {
@@ -29,6 +30,11 @@ export function Projects() {
   const [taskProjectId, setTaskProjectId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [dashboardRevision, setDashboardRevision] = useState(0)
+
+  function refreshDashboard() {
+    setDashboardRevision((revision) => revision + 1)
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -67,6 +73,7 @@ export function Projects() {
       const saved: Project = await response.json()
       setProjects((items) => [...(items ?? []).filter((item) => item.id !== saved.id), saved])
       setEditor(null)
+      refreshDashboard()
     } catch {
       setError('ارتباط با سرور برقرار نشد.')
     } finally {
@@ -86,6 +93,7 @@ export function Projects() {
       const archived: Project = await detail.json()
       setProjects((items) => items?.map((item) => item.id === archived.id ? archived : item) ?? null)
       setEditor(null)
+      refreshDashboard()
     } catch {
       setError('وضعیت آرشیو مشخص نیست. صفحه را دوباره بارگذاری کنید.')
     } finally {
@@ -99,6 +107,7 @@ export function Projects() {
 
   return (
     <section className="mt-8 space-y-4 border-t border-slate-700 pt-6">
+      <Dashboard revision={dashboardRevision} onOpenProject={setTaskProjectId} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-2xl font-bold">پروژه‌ها</h2>
         <button className={buttonClass} disabled={busy || !projects} onClick={() => { setError(''); setEditor('new') }}>
@@ -130,7 +139,7 @@ export function Projects() {
         </form>
       )}
       {sorted.map((project) => (
-        <article key={project.id} className="space-y-3 rounded-xl border border-slate-700 p-4 [overflow-wrap:anywhere]">
+        <article id={`project-${project.id}`} key={project.id} className="space-y-3 rounded-xl border border-slate-700 p-4 [overflow-wrap:anywhere]">
           <h3 className="text-lg font-bold">{project.name}</h3>
           <p className="text-sm text-teal-300">{project.archivedAt ? `آرشیوشده · ${statuses[project.status]}` : statuses[project.status]}</p>
           {project.description && <p className="whitespace-pre-wrap">{project.description}</p>}
@@ -148,7 +157,7 @@ export function Projects() {
           <button className={buttonClass} aria-expanded={taskProjectId === project.id} onClick={() => setTaskProjectId(taskProjectId === project.id ? null : project.id)}>
             {taskProjectId === project.id ? "بستن جزئیات" : "تسک‌ها و تاریخچه"}
           </button>
-          {taskProjectId === project.id && <ProjectTasks key={project.id} projectId={project.id} archived={Boolean(project.archivedAt)} />}
+          {taskProjectId === project.id && <ProjectTasks key={project.id} projectId={project.id} archived={Boolean(project.archivedAt)} onChanged={refreshDashboard} />}
         </article>
       ))}
     </section>

@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { ProjectTasks } from './ProjectTasks'
 
 const statuses = {
   planned: 'برنامه‌ریزی‌شده',
@@ -25,6 +26,7 @@ const buttonClass = 'rounded-lg border border-slate-600 px-3 py-2 disabled:opaci
 export function Projects() {
   const [projects, setProjects] = useState<Project[] | null>(null)
   const [editor, setEditor] = useState<Project | 'new' | null>(null)
+  const [taskProjectId, setTaskProjectId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -143,6 +145,10 @@ export function Projects() {
               <button className={buttonClass} disabled={busy} onClick={() => void archive(project)}>آرشیو</button>
             </div>
           )}
+          <button className={buttonClass} aria-expanded={taskProjectId === project.id} onClick={() => setTaskProjectId(taskProjectId === project.id ? null : project.id)}>
+            {taskProjectId === project.id ? "بستن تسک‌ها" : "تسک‌های پروژه"}
+          </button>
+          {taskProjectId === project.id && <ProjectTasks projectId={project.id} archived={Boolean(project.archivedAt)} />}
         </article>
       ))}
     </section>

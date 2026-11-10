@@ -22,6 +22,28 @@ npm run dev
 
 آدرس پیش‌فرض فرانت `http://localhost:5173` است. Vite درخواست‌های `/api` را به پورت 5080 می‌فرستد. مسیر `/api/health` پاسخ `{"status":"ok"}` می‌دهد و باید وضعیت اتصال در صفحه نمایش داده شود.
 
+## PostgreSQL و Migration
+
+یک دیتابیس خالی به نام `management_panel` در PostgreSQL محلی یا Neon بسازید. رشتهٔ اتصال Npgsql را در متغیر محیطی `ConnectionStrings__Panel` تنظیم کنید. در Bash می‌توانید مقدار کامل را در یک ورودی مخفی وارد کنید:
+
+```sh
+read -rsp 'PostgreSQL connection string: ' ConnectionStrings__Panel
+printf '\n'
+export ConnectionStrings__Panel
+dotnet tool restore
+dotnet ef database update --project api
+```
+
+قالب اتصال محلی `Host=localhost;Port=5432;Database=management_panel;Username=<user>;Password=<password>` است. برای Neon از مشخصات endpoint و TLS ارائه‌شده در داشبورد Neon استفاده کنید. در Render مقدار واقعی را به‌عنوان secret محیط API تنظیم کنید. Migration را از یک محیط مجاز با دسترسی به دیتابیس اجرا کنید.
+
+Migration اولیه جدول‌های `areas` و `projects` را ایجاد می‌کند و حوزهٔ `projects` را می‌سازد. برای بررسی نتیجه، این پرس‌وجو باید یک سطر برگرداند:
+
+```sql
+SELECT "Key", "Name" FROM areas WHERE "Key" = 'projects';
+```
+
+مسیر `/api/health` وضعیت اجرای HTTP را گزارش می‌دهد و برای بالا آمدن به دیتابیس نیاز ندارد.
+
 ## Build و CI
 
 ```sh
@@ -40,4 +62,4 @@ npm run build
 3. در Vercel ریپو را با Root Directory برابر `web`، preset برابر Vite و Node.js 24 وارد کنید. فرمان build همان `npm run build` و خروجی `dist` است.
 4. در آدرس Vercel، صفحهٔ اصلی و `/api/health` را بررسی کنید. پاسخ API باید JSON با `Cache-Control: no-store` باشد.
 
-Neon، EF Core و اولین Migration در MVP-03 اضافه می‌شوند. رشتهٔ اتصال در محیط API تنظیم می‌شود.
+پیش از استفاده از قابلیت‌های وابسته به داده، Migration را روی دیتابیس همان محیط اجرا کنید.

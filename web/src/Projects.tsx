@@ -146,7 +146,7 @@ export function Projects() {
             </div>
           )}
           <button className={buttonClass} aria-expanded={taskProjectId === project.id} onClick={() => setTaskProjectId(taskProjectId === project.id ? null : project.id)}>
-            {taskProjectId === project.id ? "بستن تسک‌ها" : "تسک‌های پروژه"}
+            {taskProjectId === project.id ? "بستن تسک‌ها و گزارش" : "تسک‌ها و ثبت گزارش"}
           </button>
           {taskProjectId === project.id && <ProjectTasks projectId={project.id} archived={Boolean(project.archivedAt)} />}
         </article>

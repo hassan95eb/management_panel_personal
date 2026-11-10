@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { ActivityForm } from './ActivityForm'
 
 const statuses = {
   todo: 'انجام‌نشده',
@@ -142,6 +143,7 @@ export function ProjectTasks({ projectId, archived }: { projectId: string; archi
           ))}
         </ul>
       )}
+      {!archived && <ActivityForm projectId={projectId} tasks={sorted} />}
     </section>
   )
 }

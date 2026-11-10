@@ -1,3 +1,4 @@
+using ManagementPanel.Api.Activities;
 using ManagementPanel.Api.Projects;
 using ManagementPanel.Api.Tasks;
 using System.Security.Claims;
@@ -114,6 +115,7 @@ app.MapPost("/api/auth/logout", async (HttpContext context) =>
 
 app.MapProjectEndpoints();
 app.MapProjectTaskEndpoints();
+app.MapProjectActivityEndpoints();
 
 app.Run();
 

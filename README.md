@@ -1,12 +1,12 @@
-# اتاق فرمان
+# Command Center
 
-اسکلت MVP-02 شامل React، TypeScript و Tailwind در `web/` و ASP.NET Core 10 در `api/` است. صفحهٔ اصلی ورود مالک و وضعیت نشست را نمایش می‌دهد.
+The MVP-02 scaffold uses React, TypeScript, and Tailwind in `web/` and ASP.NET Core 10 in `api/`. The home page displays the owner sign-in form and session status.
 
-## اجرای محلی
+## Run locally
 
-پیش‌نیازها: Node.js 24 و .NET 10 SDK.
+Prerequisites are Node.js 24 and the .NET 10 SDK.
 
-از ریشهٔ ریپو، در ترمینال اول API را اجرا کنید:
+From the repository root, start the API in a Bash terminal.
 
 ```sh
 read -rsp 'Owner password (at least 16 characters): ' Owner__Password
@@ -15,7 +15,7 @@ export Owner__Password
 ASPNETCORE_ENVIRONMENT=Development dotnet run --project api/ManagementPanel.Api.csproj -- --urls http://127.0.0.1:5080
 ```
 
-در ترمینال دوم:
+In a second terminal, start the frontend.
 
 ```sh
 cd web
@@ -23,17 +23,17 @@ npm ci
 npm run dev
 ```
 
-آدرس پیش‌فرض فرانت `http://localhost:5173` است. Vite درخواست‌های `/api` را به پورت 5080 می‌فرستد. مسیر `/api/health` پاسخ `{"status":"ok"}` می‌دهد.
+The frontend runs at `http://localhost:5173` by default. Vite proxies `/api` requests to port 5080. The `/api/health` endpoint returns `{"status":"ok"}`.
 
-## حساب مالک و نشست
+## Owner account and sessions
 
-برای تنها حساب مالک، یک رمز تصادفی و یکتا با حداقل ۱۶ نویسه بسازید. در محیط استقرار آن را به‌عنوان secret با نام `Owner__Password` روی Render تنظیم کنید و ورود را از نشانی HTTPS فرانت انجام دهید. رمز فقط به API داده می‌شود. کوکی نشست ۱۲ ساعت اعتبار دارد و خروج، کوکی همان مرورگر را حذف می‌کند. نشست‌های مرورگرهای دیگر مستقل‌اند. راه‌اندازی مجدد محیطی که کلیدهای Data Protection را پایدار نگه نمی‌دارد، می‌تواند نشست‌ها را منقضی کند.
+Generate a unique, random password of at least 16 characters for the single owner account. For deployment, set it as the `Owner__Password` secret on Render and sign in from the frontend's HTTPS URL. The password is sent only to the API. The session cookie is valid for 12 hours. Signing out removes the cookie from the current browser. Other browser sessions are independent. Restarting an environment without persistent Data Protection keys can invalidate sessions.
 
-به‌جز سلامت سرویس و مسیر ورود، مسیرهای API به‌صورت پیش‌فرض نقش مالک را لازم دارند. درخواست‌های ورود و خروج باید هدر `X-Panel-Request: 1` داشته باشند. سقف تلاش ورود ۱۰ درخواست در دقیقه برای هر نمونهٔ API است.
+API routes require the owner role by default, except for health and sign-in. Sign-in and sign-out requests require the `X-Panel-Request: 1` header. Each API instance allows up to 10 sign-in attempts per minute.
 
-## PostgreSQL و Migration
+## PostgreSQL and migrations
 
-یک دیتابیس خالی به نام `management_panel` در PostgreSQL محلی یا Neon بسازید. رشتهٔ اتصال Npgsql را در متغیر محیطی `ConnectionStrings__Panel` تنظیم کنید. در Bash می‌توانید مقدار کامل را در یک ورودی مخفی وارد کنید:
+Create an empty `management_panel` database in local PostgreSQL or Neon. Set the Npgsql connection string in the `ConnectionStrings__Panel` environment variable. In Bash, enter the full value at a hidden prompt.
 
 ```sh
 read -rsp 'PostgreSQL connection string: ' ConnectionStrings__Panel
@@ -43,17 +43,17 @@ dotnet tool restore
 dotnet ef database update --project api
 ```
 
-قالب اتصال محلی `Host=localhost;Port=5432;Database=management_panel;Username=<user>;Password=<password>` است. برای Neon از مشخصات endpoint و TLS ارائه‌شده در داشبورد Neon استفاده کنید. در Render مقدار واقعی را به‌عنوان secret محیط API تنظیم کنید. Migration را از یک محیط مجاز با دسترسی به دیتابیس اجرا کنید.
+The local connection string format is `Host=localhost;Port=5432;Database=management_panel;Username=<user>;Password=<password>`. For Neon, use the endpoint and TLS settings from the Neon dashboard. Set the actual connection string as an API environment secret on Render. Run migrations from an environment with authorized access to the database.
 
-Migration اولیه جدول‌های `areas` و `projects` را ایجاد می‌کند و حوزهٔ `projects` را می‌سازد. برای بررسی نتیجه، این پرس‌وجو باید یک سطر برگرداند:
+The initial migration creates the `areas` and `projects` tables and seeds the `projects` area. The following query should return one row.
 
 ```sql
 SELECT "Key", "Name" FROM areas WHERE "Key" = 'projects';
 ```
 
-مسیر `/api/health` وضعیت اجرای HTTP را گزارش می‌دهد و برای بالا آمدن به دیتابیس نیاز ندارد.
+The `/api/health` endpoint reports HTTP service availability and works without a database connection.
 
-## Build و CI
+## Build and CI
 
 ```sh
 dotnet build api/ManagementPanel.Api.csproj --configuration Release
@@ -62,13 +62,13 @@ npm ci
 npm run build
 ```
 
-فایل `.github/workflows/ci.yml` این دو build را هنگام push و pull request اجرا می‌کند.
+The `.github/workflows/ci.yml` workflow runs both builds on pushes and pull requests.
 
-## استقرار آزمایشی
+## Test deployment
 
-1. در Render، سرویس Docker را با `render.yaml` یا تنظیمات معادل آن بسازید. Root Directory برابر `api`، پورت 10000 و مسیر بررسی سلامت `/api/health` است.
-2. نشانی واقعی Render را در مقصد rewrite فایل `web/vercel.json` قرار دهید. نام پیش‌فرض داخل فایل نمونه است.
-3. در Vercel ریپو را با Root Directory برابر `web`، preset برابر Vite و Node.js 24 وارد کنید. فرمان build همان `npm run build` و خروجی `dist` است.
-4. در آدرس Vercel، صفحهٔ اصلی و `/api/health` را بررسی کنید. پاسخ API باید JSON با `Cache-Control: no-store` باشد.
+1. Create the Render Docker service using `render.yaml` or equivalent settings. Set the root directory to `api`, the port to 10000, and the health check path to `/api/health`.
+2. Replace the example Render URL in the rewrite destination in `web/vercel.json` with your service URL.
+3. Import the repository into Vercel with `web` as the root directory, Vite as the framework preset, and Node.js 24. The build command is `npm run build` and the output directory is `dist`.
+4. Open the Vercel URL and check the home page and `/api/health`. The API should return JSON with `Cache-Control: no-store`.
 
-پیش از استفاده از قابلیت‌های وابسته به داده، Migration را روی دیتابیس همان محیط اجرا کنید.
+Apply the migration to the target database before using features that depend on stored data.

@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using ManagementPanel.Api.Activities;
 using ManagementPanel.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,7 +30,11 @@ public static class ProjectEndpoints
             var project = input.ToProject(Guid.NewGuid());
             if (!IsValid(project)) return Results.BadRequest();
 
+            var actorId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(actorId)) return Results.Forbid();
+
             db.Projects.Add(project);
+            db.ProjectActivities.Add(ProjectActivity.Automatic(project.Id, actorId, "پروژه ایجاد شد."));
             await db.SaveChangesAsync(ct);
             return Results.Created($"/api/projects/{project.Id}", project);
         });
@@ -57,11 +63,23 @@ public static class ProjectEndpoints
         projects.MapPut("/{id:guid}/archive", async (Guid id, HttpContext context, PanelDbContext db, CancellationToken ct) =>
         {
             if (!IsPanelRequest(context)) return Results.BadRequest();
+            var actorId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(actorId)) return Results.Forbid();
+
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
             var archivedAt = DateTimeOffset.UtcNow;
             var updated = await db.Projects.Where(p => p.Id == id && p.ArchivedAt == null)
                 .ExecuteUpdateAsync(setters => setters.SetProperty(p => p.ArchivedAt, archivedAt), ct);
 
-            return updated != 0 || await db.Projects.AnyAsync(p => p.Id == id, ct)
+            if (updated != 0)
+            {
+                db.ProjectActivities.Add(ProjectActivity.Automatic(id, actorId, "پروژه آرشیو شد."));
+                await db.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
+                return Results.NoContent();
+            }
+
+            return await db.Projects.AnyAsync(p => p.Id == id, ct)
                 ? Results.NoContent()
                 : Results.NotFound();
         });

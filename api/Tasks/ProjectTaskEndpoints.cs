@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using ManagementPanel.Api.Activities;
 using ManagementPanel.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,6 +54,18 @@ public static class ProjectTaskEndpoints
             if (!IsPanelRequest(context)) return Results.BadRequest();
             var task = new ProjectTask { Id = id, ProjectId = projectId, Title = "" };
             if (!input.Apply(task)) return Results.BadRequest();
+            var actorId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(actorId)) return Results.Forbid();
+
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
+
+            // Serialize edits so the previous status reflects the last committed change.
+            var statuses = await db.Database.SqlQuery<string>(
+                $"SELECT \"Status\" AS \"Value\" FROM project_tasks WHERE \"ProjectId\" = {projectId} AND \"Id\" = {id} FOR UPDATE")
+                .ToListAsync(ct);
+            var previousStatus = statuses.SingleOrDefault();
+            if (previousStatus is null) return Results.NotFound();
+
             var scoped = db.ProjectTasks.Where(item => item.ProjectId == projectId && item.Id == id);
             var updated = await scoped
                 .Where(_ => db.Projects.Any(project => project.Id == projectId && project.ArchivedAt == null))
@@ -61,9 +75,17 @@ public static class ProjectTaskEndpoints
                     .SetProperty(item => item.Priority, task.Priority)
                     .SetProperty(item => item.DueDate, task.DueDate)
                     .SetProperty(item => item.BlockedReason, task.BlockedReason), ct);
-            if (updated != 0) return Results.Ok(task);
+            if (updated == 0) return Results.Conflict();
 
-            return await scoped.AnyAsync(ct) ? Results.Conflict() : Results.NotFound();
+            if (previousStatus != task.Status)
+            {
+                db.ProjectActivities.Add(ProjectActivity.Automatic(
+                    projectId, actorId, $"وضعیت تسک از {previousStatus} به {task.Status} تغییر کرد.", id));
+                await db.SaveChangesAsync(ct);
+            }
+
+            await transaction.CommitAsync(ct);
+            return Results.Ok(task);
         });
     }
 

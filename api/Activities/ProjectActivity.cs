@@ -10,4 +10,15 @@ public sealed class ProjectActivity
     public required string ActorId { get; init; }
     public required string Source { get; init; }
     public DateTimeOffset CreatedAt { get; init; }
+
+    internal static ProjectActivity Automatic(Guid projectId, string actorId, string report, Guid? taskId = null) => new()
+    {
+        Id = Guid.NewGuid(),
+        ProjectId = projectId,
+        TaskId = taskId,
+        ActorId = actorId,
+        Report = report,
+        Source = "automatic",
+        CreatedAt = DateTimeOffset.UtcNow
+    };
 }

@@ -1,3 +1,4 @@
+using ManagementPanel.Api.Activities;
 using ManagementPanel.Api.Areas;
 using ManagementPanel.Api.Projects;
 using ManagementPanel.Api.Tasks;
@@ -10,6 +11,8 @@ public sealed class PanelDbContext(DbContextOptions<PanelDbContext> options) : D
     public DbSet<Area> Areas => Set<Area>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectTask> ProjectTasks => Set<ProjectTask>();
+
+    public DbSet<ProjectActivity> ProjectActivities => Set<ProjectActivity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +48,23 @@ public sealed class PanelDbContext(DbContextOptions<PanelDbContext> options) : D
         tasks.HasOne<Project>()
             .WithMany()
             .HasForeignKey(task => task.ProjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        var activities = modelBuilder.Entity<ProjectActivity>();
+        activities.ToTable("project_activities");
+        activities.HasKey(activity => activity.Id);
+        activities.Property(activity => activity.Report).HasMaxLength(4000).IsRequired();
+        activities.Property(activity => activity.Link).HasMaxLength(2048);
+        activities.Property(activity => activity.ActorId).HasMaxLength(200).IsRequired();
+        activities.Property(activity => activity.Source).HasMaxLength(20).IsRequired();
+        activities.HasOne<Project>()
+            .WithMany()
+            .HasForeignKey(activity => activity.ProjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+        activities.HasOne<ProjectTask>()
+            .WithMany()
+            .HasForeignKey(activity => new { activity.ProjectId, activity.TaskId })
+            .HasPrincipalKey(task => new { task.ProjectId, task.Id })
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

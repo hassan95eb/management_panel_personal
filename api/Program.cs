@@ -1,3 +1,4 @@
+using ManagementPanel.Api.Codex;
 using ManagementPanel.Api.Dashboard;
 using ManagementPanel.Api.Activities;
 using ManagementPanel.Api.Projects;
@@ -118,6 +119,7 @@ app.MapProjectEndpoints();
 app.MapProjectTaskEndpoints();
 app.MapProjectActivityEndpoints();
 app.MapDashboardEndpoints();
+app.MapCodexKeyEndpoints();
 
 app.Run();
 

@@ -1,3 +1,4 @@
+using ManagementPanel.Api.Projects;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -109,6 +110,8 @@ app.MapPost("/api/auth/logout", async (HttpContext context) =>
     await context.SignOutAsync();
     return Results.NoContent();
 });
+
+app.MapProjectEndpoints();
 
 app.Run();
 

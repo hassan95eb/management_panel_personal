@@ -1,6 +1,7 @@
 import { StrictMode, useEffect, useState, type FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
+import { Projects } from './Projects'
 
 function App() {
   const [session, setSession] = useState<'checking' | 'guest' | 'owner' | 'unavailable'>('checking')
@@ -85,6 +86,7 @@ function App() {
             </button>
           </form>
         )}
+        {session === 'owner' && <Projects />}
         {message && <p role="alert" className="mt-4 text-rose-300">{message}</p>}
       </section>
     </main>

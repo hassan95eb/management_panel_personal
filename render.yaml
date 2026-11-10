@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: management-panel-api
+    runtime: docker
+    plan: free
+    rootDir: api
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    envVars:
+      - key: ASPNETCORE_HTTP_PORTS
+        value: "10000"

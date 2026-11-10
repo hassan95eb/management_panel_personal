@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 
 type TaskOption = { id: string; title: string }
 
-export function ActivityForm({ projectId, tasks }: { projectId: string; tasks: TaskOption[] | null }) {
+export function ActivityForm({ projectId, tasks, onSaved }: { projectId: string; tasks: TaskOption[] | null; onSaved: () => void }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [feedback, setFeedback] = useState<'saved' | 'invalid' | 'failed' | null>(null)
@@ -28,6 +28,7 @@ export function ActivityForm({ projectId, tasks }: { projectId: string; tasks: T
       if (response.status === 201) {
         setOpen(false)
         setFeedback('saved')
+        onSaved()
       } else {
         setFeedback(response.status === 400 ? 'invalid' : 'failed')
       }

@@ -8,6 +8,29 @@ public static class ProjectActivityEndpoints
 {
     public static void MapProjectActivityEndpoints(this WebApplication app)
     {
+        app.MapGet("/api/projects/{projectId:guid}/activities", async (
+            Guid projectId, PanelDbContext db, CancellationToken ct, int offset = 0) =>
+        {
+            const int pageSize = 20;
+            if (offset < 0) return Results.BadRequest();
+            if (!await db.Projects.AnyAsync(project => project.Id == projectId, ct))
+                return Results.NotFound();
+
+            var activities = await db.ProjectActivities.AsNoTracking()
+                .Where(activity => activity.ProjectId == projectId)
+                .OrderByDescending(activity => activity.CreatedAt)
+                .ThenByDescending(activity => activity.Id)
+                .Skip(offset)
+                .Take(pageSize + 1)
+                .ToListAsync(ct);
+
+            return Results.Ok(new
+            {
+                Items = activities.Take(pageSize),
+                HasMore = activities.Count > pageSize
+            });
+        }).RequireAuthorization(policy => policy.RequireRole("Owner"));
+
         app.MapPost("/api/projects/{projectId:guid}/activities", async (
             Guid projectId, ActivityInput input, HttpContext context, PanelDbContext db, CancellationToken ct) =>
         {

@@ -22,6 +22,11 @@ public sealed class PanelDbContext(DbContextOptions<PanelDbContext> options) : D
         projects.ToTable("projects");
         projects.HasKey(project => project.Id);
         projects.Property(project => project.Name).HasMaxLength(200).IsRequired();
+        projects.Property(project => project.Description).HasMaxLength(4000);
+        projects.Property(project => project.Status).HasMaxLength(20).HasDefaultValue("active");
+        projects.Property(project => project.RepositoryUrl).HasMaxLength(2048);
+        projects.Property(project => project.EnvironmentUrl).HasMaxLength(2048);
+        projects.Property(project => project.NextStep).HasMaxLength(1000);
         projects.Property(project => project.AreaKey).HasMaxLength(50).IsRequired();
         projects.HasOne<Area>()
             .WithMany()

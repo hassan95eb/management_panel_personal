@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { ActivityForm } from './ActivityForm'
+import { ActivityHistory } from './ActivityHistory'
 
 const statuses = {
   todo: 'انجام‌نشده',
@@ -29,6 +30,11 @@ export function ProjectTasks({ projectId, archived }: { projectId: string; archi
   const [status, setStatus] = useState<ProjectTask['status']>('todo')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [historyRevision, setHistoryRevision] = useState(0)
+
+  function refreshHistory() {
+    setHistoryRevision((revision) => revision + 1)
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -77,6 +83,7 @@ export function ProjectTasks({ projectId, archived }: { projectId: string; archi
       }
       const saved: ProjectTask = await response.json()
       setTasks((items) => [...(items ?? []).filter((task) => task.id !== saved.id), saved])
+      if (editor !== 'new') refreshHistory()
       setEditor(null)
     } catch {
       setError('ارتباط با سرور برقرار نشد.')
@@ -143,7 +150,8 @@ export function ProjectTasks({ projectId, archived }: { projectId: string; archi
           ))}
         </ul>
       )}
-      {!archived && <ActivityForm projectId={projectId} tasks={sorted} />}
+      {!archived && <ActivityForm projectId={projectId} tasks={sorted} onSaved={refreshHistory} />}
+      <ActivityHistory key={`${archived}-${historyRevision}`} projectId={projectId} tasks={sorted} />
     </section>
   )
 }

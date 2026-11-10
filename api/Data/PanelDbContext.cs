@@ -1,5 +1,6 @@
 using ManagementPanel.Api.Areas;
 using ManagementPanel.Api.Projects;
+using ManagementPanel.Api.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace ManagementPanel.Api.Data;
@@ -8,6 +9,7 @@ public sealed class PanelDbContext(DbContextOptions<PanelDbContext> options) : D
 {
     public DbSet<Area> Areas => Set<Area>();
     public DbSet<Project> Projects => Set<Project>();
+    public DbSet<ProjectTask> ProjectTasks => Set<ProjectTask>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,6 +33,18 @@ public sealed class PanelDbContext(DbContextOptions<PanelDbContext> options) : D
         projects.HasOne<Area>()
             .WithMany()
             .HasForeignKey(project => project.AreaKey)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        var tasks = modelBuilder.Entity<ProjectTask>();
+        tasks.ToTable("project_tasks");
+        tasks.HasKey(task => task.Id);
+        tasks.Property(task => task.Title).HasMaxLength(200).IsRequired();
+        tasks.Property(task => task.Status).HasMaxLength(20).IsRequired();
+        tasks.Property(task => task.Priority).HasMaxLength(20).IsRequired();
+        tasks.Property(task => task.BlockedReason).HasMaxLength(1000);
+        tasks.HasOne<Project>()
+            .WithMany()
+            .HasForeignKey(task => task.ProjectId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

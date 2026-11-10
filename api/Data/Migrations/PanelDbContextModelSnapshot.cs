@@ -94,11 +94,58 @@ namespace ManagementPanel.Api.Data.Migrations
                     b.ToTable("projects", (string)null);
                 });
 
+            modelBuilder.Entity("ManagementPanel.Api.Tasks.ProjectTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BlockedReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateOnly?>("DueDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("project_tasks", (string)null);
+                });
+
             modelBuilder.Entity("ManagementPanel.Api.Projects.Project", b =>
                 {
                     b.HasOne("ManagementPanel.Api.Areas.Area", null)
                         .WithMany()
                         .HasForeignKey("AreaKey")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ManagementPanel.Api.Tasks.ProjectTask", b =>
+                {
+                    b.HasOne("ManagementPanel.Api.Projects.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

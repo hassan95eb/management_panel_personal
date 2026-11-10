@@ -1,6 +1,6 @@
 # اتاق فرمان
 
-اسکلت MVP-02 شامل React، TypeScript و Tailwind در `web/` و ASP.NET Core 10 در `api/` است. صفحهٔ اولیه نتیجهٔ درخواست `GET /api/health` را نمایش می‌دهد.
+اسکلت MVP-02 شامل React، TypeScript و Tailwind در `web/` و ASP.NET Core 10 در `api/` است. صفحهٔ اصلی ورود مالک و وضعیت نشست را نمایش می‌دهد.
 
 ## اجرای محلی
 
@@ -9,7 +9,10 @@
 از ریشهٔ ریپو، در ترمینال اول API را اجرا کنید:
 
 ```sh
-dotnet run --project api/ManagementPanel.Api.csproj -- --urls http://127.0.0.1:5080
+read -rsp 'Owner password (at least 16 characters): ' Owner__Password
+printf '\n'
+export Owner__Password
+ASPNETCORE_ENVIRONMENT=Development dotnet run --project api/ManagementPanel.Api.csproj -- --urls http://127.0.0.1:5080
 ```
 
 در ترمینال دوم:
@@ -20,7 +23,13 @@ npm ci
 npm run dev
 ```
 
-آدرس پیش‌فرض فرانت `http://localhost:5173` است. Vite درخواست‌های `/api` را به پورت 5080 می‌فرستد. مسیر `/api/health` پاسخ `{"status":"ok"}` می‌دهد و باید وضعیت اتصال در صفحه نمایش داده شود.
+آدرس پیش‌فرض فرانت `http://localhost:5173` است. Vite درخواست‌های `/api` را به پورت 5080 می‌فرستد. مسیر `/api/health` پاسخ `{"status":"ok"}` می‌دهد.
+
+## حساب مالک و نشست
+
+برای تنها حساب مالک، یک رمز تصادفی و یکتا با حداقل ۱۶ نویسه بسازید. در محیط استقرار آن را به‌عنوان secret با نام `Owner__Password` روی Render تنظیم کنید و ورود را از نشانی HTTPS فرانت انجام دهید. رمز فقط به API داده می‌شود. کوکی نشست ۱۲ ساعت اعتبار دارد و خروج، کوکی همان مرورگر را حذف می‌کند. نشست‌های مرورگرهای دیگر مستقل‌اند. راه‌اندازی مجدد محیطی که کلیدهای Data Protection را پایدار نگه نمی‌دارد، می‌تواند نشست‌ها را منقضی کند.
+
+به‌جز سلامت سرویس و مسیر ورود، مسیرهای API به‌صورت پیش‌فرض نقش مالک را لازم دارند. درخواست‌های ورود و خروج باید هدر `X-Panel-Request: 1` داشته باشند. سقف تلاش ورود ۱۰ درخواست در دقیقه برای هر نمونهٔ API است.
 
 ## PostgreSQL و Migration
 

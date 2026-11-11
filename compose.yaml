@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: management_panel
+      POSTGRES_USER: panel
+      POSTGRES_PASSWORD: local-db-password
+    volumes:
+      - panel-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "panel", "-d", "management_panel"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "10000"
+      Owner__Password: "${PANEL_OWNER_PASSWORD:-LocalPanelOwner-ChangeMe}"
+      ConnectionStrings__Panel: "Host=db;Database=management_panel;Username=panel;Password=local-db-password"
+      Database__MigrateOnStartup: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      - api
+
+volumes:
+  panel-db:

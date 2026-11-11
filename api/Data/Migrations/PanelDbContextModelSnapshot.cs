@@ -109,6 +109,20 @@ namespace ManagementPanel.Api.Data.Migrations
                     b.ToTable("codex_project_grants", (string)null);
                 });
 
+            modelBuilder.Entity("ManagementPanel.Api.Inbox.InboxItem", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<Guid?>("ProjectId").HasColumnType("uuid");
+                    b.Property<Guid?>("TaskId").HasColumnType("uuid");
+                    b.Property<string>("Text").IsRequired().HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.HasKey("Id");
+                    b.HasIndex("ProjectId", "TaskId");
+                    b.ToTable("inbox_items", (string)null);
+                });
+
             modelBuilder.Entity("ManagementPanel.Api.Projects.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -237,6 +251,14 @@ namespace ManagementPanel.Api.Data.Migrations
             modelBuilder.Entity("ManagementPanel.Api.Codex.CodexKey", b =>
                 {
                     b.Navigation("Grants");
+                });
+            modelBuilder.Entity("ManagementPanel.Api.Inbox.InboxItem", b =>
+                {
+                    b.HasOne("ManagementPanel.Api.Projects.Project", null).WithMany()
+                        .HasForeignKey("ProjectId").OnDelete(DeleteBehavior.Restrict);
+                    b.HasOne("ManagementPanel.Api.Tasks.ProjectTask", null).WithMany()
+                        .HasForeignKey("ProjectId", "TaskId").HasPrincipalKey("ProjectId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 #pragma warning restore 612, 618
         }

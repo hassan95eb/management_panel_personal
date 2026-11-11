@@ -61,6 +61,7 @@ builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireRole("Owner").Build());
 builder.Services.AddRateLimiter(options =>
 {
+    CodexRequestLimits.Configure(options, builder.Configuration);
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.AddFixedWindowLimiter("owner-login", limiter =>
     {
@@ -90,6 +91,7 @@ app.Use(async (context, next) =>
 });
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCodexRequestLimits();
 app.UseRateLimiter();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }))

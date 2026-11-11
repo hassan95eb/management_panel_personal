@@ -75,6 +75,34 @@ with different data under the same key returns HTTP 409. A task from another
 project or invalid input returns HTTP 400. An invalid or revoked key returns
 HTTP 401 for a valid request, and an unavailable project returns HTTP 404.
 
+## Codex API contract and request limits
+
+See [OpenAPI](docs/codex-openapi.json) for the request and response schemas.
+Set `PANEL_URL`, `CODEX_KEY`, `PROJECT_ID` and a fresh UUID
+`OPERATION_ID` in your shell before running these examples:
+
+```sh
+curl -sS "$PANEL_URL/api/codex/projects" \
+  -H "Authorization: Bearer $CODEX_KEY"
+
+curl -sS "$PANEL_URL/api/codex/projects/$PROJECT_ID/activities" \
+  -H "Authorization: Bearer $CODEX_KEY" \
+  -H "Idempotency-Key: $OPERATION_ID" \
+  -H "Content-Type: application/json" \
+  --data '{"report":"Implemented the feature and ran the build."}'
+```
+
+The activity body limit is 64 KiB. The API defaults to 60 requests per
+presented key per minute and 300 total Codex requests per minute per API
+instance, including requests without a valid key. Configure these with
+`Codex__RequestsPerKeyPerMinute` and `Codex__RequestsPerMinute`.
+On HTTP 429, respect `Retry-After` when present.
+
+At deployment, verify the ingress limit against the public URL using
+requests without a key. Use an isolated deployment with a temporarily low
+ingress limit and a higher per-key limit, then confirm that requests first
+return 401 and then 429. Restore the intended configuration afterwards.
+
 ## PostgreSQL and migrations
 
 Create an empty `management_panel` database in local PostgreSQL or Neon. Set the Npgsql connection string in the `ConnectionStrings__Panel` environment variable. In Bash, enter the full value at a hidden prompt.

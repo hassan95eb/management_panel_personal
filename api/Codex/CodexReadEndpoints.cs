@@ -9,6 +9,7 @@ public static class CodexReadEndpoints
     public static void MapCodexReadEndpoints(this WebApplication app)
     {
         app.MapGet("/api/codex/projects/{projectId:guid?}", ReadProjectsAsync)
+            .RequireRateLimiting(CodexRequestLimits.Policy)
             .AllowAnonymous(); // This handler authenticates Codex keys independently of owner cookies.
     }
 

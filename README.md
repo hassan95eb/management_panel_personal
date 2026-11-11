@@ -2,7 +2,27 @@
 
 The MVP-02 scaffold uses React, TypeScript, and Tailwind in `web/` and ASP.NET Core 10 in `api/`. The home page displays the owner sign-in form and session status.
 
-## Run locally
+## Run locally with Docker Compose
+
+Start Docker Desktop or Docker Engine with the Compose plugin. From the repository root, run:
+
+```sh
+docker compose up --build -d
+```
+
+Open http://localhost:5173 and sign in with the local-only default password
+`LocalPanelOwner-ChangeMe`. To override it, set `PANEL_OWNER_PASSWORD` in a
+root `.env` file before starting Compose. Use at least 16 characters.
+
+Compose starts PostgreSQL, waits for it to accept connections, and applies EF Core
+migrations before the API starts serving requests. Check
+http://localhost:5173/api/health for `{"status":"ok"}`. If startup fails, run
+`docker compose logs db api web` to see the service output.
+
+Use `docker compose down` to stop the stack. PostgreSQL data persists in a named
+volume.
+
+## Run locally without Docker
 
 Prerequisites are Node.js 24 and the .NET 10 SDK.
 

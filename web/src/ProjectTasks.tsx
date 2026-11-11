@@ -23,7 +23,7 @@ type ProjectTask = {
 const inputClass = 'w-full rounded-lg border border-slate-600 bg-slate-950 px-3 py-2'
 const buttonClass = 'rounded-lg border border-slate-600 px-3 py-2 disabled:opacity-50'
 
-export function ProjectTasks({ projectId, archived, onChanged }: { projectId: string; archived: boolean; onChanged: () => void }) {
+export function ProjectTasks({ projectId, archived, onChanged, focusTaskId }: { projectId: string; archived: boolean; onChanged: () => void; focusTaskId: string | null }) {
   const path = `/api/projects/${projectId}/tasks`
   const [tasks, setTasks] = useState<ProjectTask[] | null>(null)
   const [editor, setEditor] = useState<ProjectTask | 'new' | null>(null)
@@ -35,6 +35,11 @@ export function ProjectTasks({ projectId, archived, onChanged }: { projectId: st
   function refreshHistory() {
     setHistoryRevision((revision) => revision + 1)
   }
+
+  useEffect(() => {
+    if (!focusTaskId || !tasks?.some((task) => task.id === focusTaskId)) return
+    document.getElementById(`task-${focusTaskId}`)?.focus()
+  }, [focusTaskId, tasks])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -137,7 +142,7 @@ export function ProjectTasks({ projectId, archived, onChanged }: { projectId: st
       {sorted.length > 0 && (
         <ul className="space-y-2">
           {sorted.map((task) => (
-            <li key={task.id} className="space-y-2 rounded-lg border border-slate-700 p-3">
+            <li key={task.id} id={`task-${task.id}`} tabIndex={-1} className="space-y-2 rounded-lg border border-slate-700 p-3">
               <p className="font-medium">{task.title}</p>
               <p className="text-sm text-slate-300">
                 {statuses[task.status]} · اولویت {priorities[task.priority]}

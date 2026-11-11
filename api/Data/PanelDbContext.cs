@@ -1,3 +1,4 @@
+using ManagementPanel.Api.Inbox;
 using ManagementPanel.Api.Codex;
 using ManagementPanel.Api.Activities;
 using ManagementPanel.Api.Areas;
@@ -17,8 +18,21 @@ public sealed class PanelDbContext(DbContextOptions<PanelDbContext> options) : D
 
     public DbSet<CodexKey> CodexKeys => Set<CodexKey>();
 
+    public DbSet<InboxItem> InboxItems => Set<InboxItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var inbox = modelBuilder.Entity<InboxItem>();
+        inbox.ToTable("inbox_items");
+        inbox.HasKey(item => item.Id);
+        inbox.Property(item => item.Text).HasMaxLength(4000).IsRequired();
+        inbox.HasOne<Project>().WithMany().HasForeignKey(item => item.ProjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+        inbox.HasOne<ProjectTask>().WithMany()
+            .HasForeignKey(item => new { item.ProjectId, item.TaskId })
+            .HasPrincipalKey(task => new { task.ProjectId, task.Id })
+            .OnDelete(DeleteBehavior.Restrict);
+
         var keys = modelBuilder.Entity<CodexKey>();
         keys.ToTable("codex_keys");
         keys.HasKey(key => key.Id);

@@ -1,3 +1,4 @@
+using ManagementPanel.Api.Inbox;
 using ManagementPanel.Api.Codex;
 using ManagementPanel.Api.Dashboard;
 using ManagementPanel.Api.Activities;
@@ -131,6 +132,7 @@ app.MapDashboardEndpoints();
 app.MapCodexKeyEndpoints();
 app.MapCodexReadEndpoints();
 app.MapCodexActivityEndpoints();
+app.MapInboxEndpoints();
 
 app.Run();
 

@@ -103,6 +103,16 @@ requests without a key. Use an isolated deployment with a temporarily low
 ingress limit and a higher per-key limit, then confirm that requests first
 return 401 and then 429. Restore the intended configuration afterwards.
 
+## Quick capture inbox
+
+Sign in as the owner and use the inbox to capture a note or a task idea.
+Choose an active project to link the item, or enter a task title and
+convert it into a new to-do. The inbox retains the original note and
+opens the resulting task from the converted item.
+
+Apply the inbox migration before using this feature. Docker Compose
+applies it during startup.
+
 ## PostgreSQL and migrations
 
 Create an empty `management_panel` database in local PostgreSQL or Neon. Set the Npgsql connection string in the `ConnectionStrings__Panel` environment variable. In Bash, enter the full value at a hidden prompt.

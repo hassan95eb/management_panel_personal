@@ -55,6 +55,7 @@ internal static class CodexRequestLimits
             await Results.Problem(statusCode: status, title: title).ExecuteAsync(context);
         });
 
+        app.UseRateLimiter();
         app.Use(async (context, next) =>
         {
             if (IsCodex(context) && HttpMethods.IsPost(context.Request.Method))
@@ -72,7 +73,15 @@ internal static class CodexRequestLimits
                     feature.MaxRequestBodySize = MaxBodyBytes;
             }
 
-            await next(context);
+            try
+            {
+                await next(context);
+            }
+            catch (BadHttpRequestException exception) when (IsCodex(context) &&
+                !context.Response.HasStarted && exception.StatusCode == StatusCodes.Status413PayloadTooLarge)
+            {
+                context.Response.StatusCode = StatusCodes.Status413PayloadTooLarge;
+            }
         });
     }
 

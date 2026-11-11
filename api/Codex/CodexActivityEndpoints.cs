@@ -12,6 +12,7 @@ public static class CodexActivityEndpoints
     public static void MapCodexActivityEndpoints(this WebApplication app)
     {
         app.MapPost("/api/codex/projects/{projectId:guid}/activities", RecordAsync)
+            .RequireRateLimiting(CodexRequestLimits.Policy)
             .AllowAnonymous();
     }
 

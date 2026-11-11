@@ -86,6 +86,29 @@ namespace ManagementPanel.Api.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ManagementPanel.Api.Codex.CodexKey", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uuid");
+                    b.Property<string>("Name").IsRequired().HasMaxLength(100).HasColumnType("character varying(100)");
+                    b.Property<string>("SecretHash").IsRequired().HasMaxLength(64).HasColumnType("character varying(64)");
+                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<DateTimeOffset?>("RevokedAt").HasColumnType("timestamp with time zone");
+                    b.HasKey("Id");
+                    b.HasIndex("SecretHash").IsUnique();
+                    b.ToTable("codex_keys", (string)null);
+                });
+
+            modelBuilder.Entity("ManagementPanel.Api.Codex.CodexProjectGrant", b =>
+                {
+                    b.Property<Guid>("KeyId").HasColumnType("uuid");
+                    b.Property<Guid>("ProjectId").HasColumnType("uuid");
+                    b.Property<bool>("CanRead").HasColumnType("boolean");
+                    b.Property<bool>("CanWriteActivity").HasColumnType("boolean");
+                    b.HasKey("KeyId", "ProjectId");
+                    b.HasIndex("ProjectId");
+                    b.ToTable("codex_project_grants", (string)null);
+                });
+
             modelBuilder.Entity("ManagementPanel.Api.Projects.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -202,6 +225,18 @@ namespace ManagementPanel.Api.Data.Migrations
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+            modelBuilder.Entity("ManagementPanel.Api.Codex.CodexProjectGrant", b =>
+                {
+                    b.HasOne("ManagementPanel.Api.Codex.CodexKey", null)
+                        .WithMany("Grants").HasForeignKey("KeyId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.HasOne("ManagementPanel.Api.Projects.Project", null)
+                        .WithMany().HasForeignKey("ProjectId").OnDelete(DeleteBehavior.Restrict).IsRequired();
+                });
+
+            modelBuilder.Entity("ManagementPanel.Api.Codex.CodexKey", b =>
+                {
+                    b.Navigation("Grants");
                 });
 #pragma warning restore 612, 618
         }

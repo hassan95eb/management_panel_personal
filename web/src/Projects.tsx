@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { CodexKeys } from './CodexKeys'
 import { Dashboard } from './Dashboard'
 import { ProjectTasks } from './ProjectTasks'
 
@@ -108,6 +109,7 @@ export function Projects() {
   return (
     <section className="mt-8 space-y-4 border-t border-slate-700 pt-6">
       <Dashboard revision={dashboardRevision} onOpenProject={setTaskProjectId} />
+      <CodexKeys projects={sorted} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-2xl font-bold">پروژه‌ها</h2>
         <button className={buttonClass} disabled={busy || !projects} onClick={() => { setError(''); setEditor('new') }}>

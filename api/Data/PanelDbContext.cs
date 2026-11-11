@@ -1,3 +1,4 @@
+using ManagementPanel.Api.Codex;
 using ManagementPanel.Api.Activities;
 using ManagementPanel.Api.Areas;
 using ManagementPanel.Api.Projects;
@@ -14,8 +15,24 @@ public sealed class PanelDbContext(DbContextOptions<PanelDbContext> options) : D
 
     public DbSet<ProjectActivity> ProjectActivities => Set<ProjectActivity>();
 
+    public DbSet<CodexKey> CodexKeys => Set<CodexKey>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var keys = modelBuilder.Entity<CodexKey>();
+        keys.ToTable("codex_keys");
+        keys.HasKey(key => key.Id);
+        keys.Property(key => key.Name).HasMaxLength(100).IsRequired();
+        keys.Property(key => key.SecretHash).HasMaxLength(64).IsRequired();
+        keys.HasIndex(key => key.SecretHash).IsUnique();
+        keys.HasMany(key => key.Grants).WithOne().HasForeignKey(grant => grant.KeyId);
+
+        var grants = modelBuilder.Entity<CodexProjectGrant>();
+        grants.ToTable("codex_project_grants");
+        grants.HasKey(grant => new { grant.KeyId, grant.ProjectId });
+        grants.HasOne<Project>().WithMany().HasForeignKey(grant => grant.ProjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         var areas = modelBuilder.Entity<Area>();
         areas.ToTable("areas");
         areas.HasKey(area => area.Key);

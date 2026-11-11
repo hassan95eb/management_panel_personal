@@ -128,6 +128,7 @@ app.MapProjectTaskEndpoints();
 app.MapProjectActivityEndpoints();
 app.MapDashboardEndpoints();
 app.MapCodexKeyEndpoints();
+app.MapCodexReadEndpoints();
 
 app.Run();
 

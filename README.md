@@ -51,6 +51,17 @@ Generate a unique, random password of at least 16 characters for the single owne
 
 API routes require the owner role by default, except for health and sign-in. Sign-in and sign-out requests require the `X-Panel-Request: 1` header. Each API instance allows up to 10 sign-in attempts per minute.
 
+## Read projects with a Codex key
+
+Send `Authorization: Bearer <token>` to `GET /api/codex/projects` for a
+list or to `GET /api/codex/projects/{projectId}` for one project. Each
+result includes its open tasks. The key needs read permission for each
+project. Archived projects and completed tasks are excluded.
+
+Missing, invalid, or revoked keys return HTTP 401. A direct request for
+an unavailable project returns HTTP 404. A valid key without readable
+projects gets an empty list.
+
 ## PostgreSQL and migrations
 
 Create an empty `management_panel` database in local PostgreSQL or Neon. Set the Npgsql connection string in the `ConnectionStrings__Panel` environment variable. In Bash, enter the full value at a hidden prompt.

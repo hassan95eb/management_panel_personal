@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { CodexKeys } from './CodexKeys'
+import { Inbox } from './Inbox'
 import { Dashboard } from './Dashboard'
 import { ProjectTasks } from './ProjectTasks'
 
@@ -29,6 +30,8 @@ export function Projects() {
   const [projects, setProjects] = useState<Project[] | null>(null)
   const [editor, setEditor] = useState<Project | 'new' | null>(null)
   const [taskProjectId, setTaskProjectId] = useState<string | null>(null)
+  const [inboxRevision, setInboxRevision] = useState(0)
+  const [inboxTaskId, setInboxTaskId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [dashboardRevision, setDashboardRevision] = useState(0)
@@ -108,6 +111,13 @@ export function Projects() {
 
   return (
     <section className="mt-8 space-y-4 border-t border-slate-700 pt-6">
+      <Inbox projects={projects ?? []} onChanged={() => {
+        setInboxRevision((revision) => revision + 1)
+        refreshDashboard()
+      }} onOpenTask={(projectId, taskId) => {
+        setInboxTaskId(taskId)
+        setTaskProjectId(projectId)
+      }} />
       <Dashboard revision={dashboardRevision} onOpenProject={setTaskProjectId} />
       <CodexKeys projects={sorted} />
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -159,7 +169,7 @@ export function Projects() {
           <button className={buttonClass} aria-expanded={taskProjectId === project.id} onClick={() => setTaskProjectId(taskProjectId === project.id ? null : project.id)}>
             {taskProjectId === project.id ? "بستن جزئیات" : "تسک‌ها و تاریخچه"}
           </button>
-          {taskProjectId === project.id && <ProjectTasks key={project.id} projectId={project.id} archived={Boolean(project.archivedAt)} onChanged={refreshDashboard} />}
+          {taskProjectId === project.id && <ProjectTasks key={`${project.id}:${inboxRevision}`} focusTaskId={inboxTaskId} projectId={project.id} archived={Boolean(project.archivedAt)} onChanged={refreshDashboard} />}
         </article>
       ))}
     </section>

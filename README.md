@@ -62,6 +62,19 @@ Missing, invalid, or revoked keys return HTTP 401. A direct request for
 an unavailable project returns HTTP 404. A valid key without readable
 projects gets an empty list.
 
+## Record activity with a Codex key
+
+Send `POST /api/codex/projects/{projectId}/activities` with
+`Authorization: Bearer <token>`, `Content-Type: application/json`, and
+`Idempotency-Key: <UUID>`. Use a key with activity-write permission for
+the project. The body accepts `report` and optional `link` and `taskId`.
+
+A new activity returns HTTP 201. Reuse the UUID with the same project and
+normalized payload to get the stored activity (HTTP 200). Reusing that UUID
+with different data under the same key returns HTTP 409. A task from another
+project or invalid input returns HTTP 400. An invalid or revoked key returns
+HTTP 401 for a valid request, and an unavailable project returns HTTP 404.
+
 ## PostgreSQL and migrations
 
 Create an empty `management_panel` database in local PostgreSQL or Neon. Set the Npgsql connection string in the `ConnectionStrings__Panel` environment variable. In Bash, enter the full value at a hidden prompt.

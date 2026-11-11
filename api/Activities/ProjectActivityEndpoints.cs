@@ -68,7 +68,7 @@ public static class ProjectActivityEndpoints
         }).RequireAuthorization(policy => policy.RequireRole("Owner"));
     }
 
-    private static bool IsWebUrl(string? link) =>
+    internal static bool IsWebUrl(string? link) =>
         link is null || (link.Length <= 2048 &&
             Uri.TryCreate(link, UriKind.Absolute, out var uri) &&
             uri.Scheme is "http" or "https" && !string.IsNullOrEmpty(uri.Host));

@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using ManagementPanel.Api.Areas;
 using ManagementPanel.Api.Data;
 using Microsoft.EntityFrameworkCore;
@@ -16,13 +15,8 @@ public static class CodexReadEndpoints
     private static async Task<IResult> ReadProjectsAsync(
         Guid? projectId, HttpContext context, PanelDbContext db, CancellationToken ct)
     {
-        if (!AuthenticationHeaderValue.TryParse(context.Request.Headers.Authorization.ToString(), out var header) ||
-            !header.Scheme.Equals("Bearer", StringComparison.OrdinalIgnoreCase) ||
-            header.Parameter is not { Length: 68 } token ||
-            !token.StartsWith("mpk_", StringComparison.Ordinal))
-            return Results.Unauthorized();
-
-        var hash = CodexKeyEndpoints.HashToken(token);
+        var hash = CodexBearerKey.ReadHash(context.Request);
+        if (hash is null) return Results.Unauthorized();
         var result = await db.CodexKeys.AsNoTracking()
             .AsSingleQuery()
             .Where(key => key.SecretHash == hash && key.RevokedAt == null)

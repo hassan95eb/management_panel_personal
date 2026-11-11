@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+const activitySources: Record<string, string> = { manual: 'دستی', automatic: 'خودکار', codex: 'Codex' }
+
 type Activity = {
   id: string
   report: string
@@ -61,7 +63,7 @@ export function ActivityHistory({ projectId, tasks }: {
             <li key={activity.id} className="space-y-2 rounded-lg border border-slate-700 p-3 [overflow-wrap:anywhere]">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-300">
                 <time dateTime={activity.createdAt}>{formatter.format(new Date(activity.createdAt))}</time>
-                <span>{activity.source === 'manual' ? 'دستی' : activity.source === 'automatic' ? 'خودکار' : activity.source}</span>
+                <span>{activitySources[activity.source] ?? activity.source}</span>
               </div>
               <p className="whitespace-pre-wrap">{activity.report}</p>
               {activity.taskId && <p className="text-sm text-slate-300">تسک مرتبط · {tasks.find((task) => task.id === activity.taskId)?.title ?? activity.taskId}</p>}
